@@ -33,10 +33,15 @@ module Tflipflop_tb;
             #5 rst_n = 1;
             T = 1;
             #30 T = 0;
-            
+            #20 T = 1;
+        end
+    
+    initial
+        begin
+            $monitor($time, "T=%b, clk=%b, rst_n=%b, data_out=%b", T, clk, rst_n, data_out);
+        end
+endmodule
 ```
-
-
 
 ### Testbench主要功能
 
@@ -63,10 +68,10 @@ module Tflipflop_tb;
 
 ## 仿真效率
 
-pass
+Verilog HDL行为级仿真代码的执行时间比较长，主要原因是通过串行软件代码完成并行语义的转化。
 
-1. pass
-2. pass
+1. 减小层次结构
+2. 减少门级代码的使用
 3. 仿真精度越高，效率越低
 4. 进程越少，效率越高
 5. 减少仿真器的输出显示
