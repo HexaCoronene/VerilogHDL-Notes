@@ -237,17 +237,89 @@ initial
 
 begin-end 过程块加上延迟赋值语句
 
+若在延迟时间后有相应的行为语句，仿真进行到这条语句后，会等到延迟时间量过去后再执行行为语句。
+
+```verilog
+`timescale 1ns/1ns
+module serial_delay(q0_out, q1_out);
+    output q0_out, q1_out;
+    reg q0_out, q1_out;
+    initial
+        begin
+            q0_out = 1'b0;
+            #50 q0_out = 1'b1;
+            #100 q0_out = 1'b0;
+            ...
+        end
+    
+    initial
+        begin
+            q1_out = 1'b0;
+            #100 q1_out = 1'b1;
+            #100 q1_out = 1'b0;
+        end
+endmodule
+```
+
 #### 并行延迟控制
 
 fork-join 过程块加上延迟赋值语句
+
+并行延迟控制方式中的多条延迟控制语句是并行执行的
+
+```verilog
+`timescale 1ns/1ns
+module serial_delay(q0_out, q1_out);
+    output q0_out, q1_out;
+    reg q0_out, q1_out;
+    initial
+        fork
+            q0_out = 1'b0;
+            #50 q0_out = 1'b1;
+            #100 q0_out = 1'b0;
+            ...
+        join
+    
+    initial
+        fork
+            q1_out = 1'b0;
+            #100 q1_out = 1'b1;
+            #100 q1_out = 1'b0;
+        join
+endmodule
+```
 
 #### 阻塞式延迟控制
 
 在阻塞式过程赋值基础上带有延迟控制的情况
 
+各条语句依次执行，上一条语句赋值操作没有完成之前下一条语句不会开始执行
+
+```verilog
+initial
+    begin
+        a = 0;
+        a = #5 1;
+        a = #10 0;
+        ...
+    end
+```
+
 #### 非阻塞式延迟控制
 
 在非阻塞式过程赋值基础上带有延迟控制的情况
+
+各条非阻塞式赋值语句均以并行方式执行
+
+```verilog
+initial
+    begin
+        a <= 0;
+        a <= #5 1;
+        a <= #10 0;
+        ...
+    end
+```
 
 ### 边沿触发事件控制
 
@@ -271,13 +343,47 @@ fork-join 过程块加上延迟赋值语句
 
 信号名可以是任何数据类型的标量或矢量
 
-| 正跳变 | 负跳变 |
-| ------ | ------ |
-| 0 -> x | 1 -> x |
-| 0 -> z | 1 -> z |
-| 0 -> 1 | 1 -> 0 |
-| x -> 1 | x -> 0 |
-| z -> 1 | z -> 0 |
+| 正跳变    | 负跳变 |
+| --------- | ------ |
+| $0\to x$ | $1\to x$ |
+| $0\to z$ | $1\to z$ |
+| $0\to1$ | $1\to0$ |
+| $x\to1$ | $x\to0$ |
+| $z\to1$ | $z\to0$ |
+
+```verilog
+//时钟脉冲计数器
+module clk_counter(clk, count_out);
+    input clk;
+    output count_out;
+    reg [3:0] count_out;
+    initial
+        count_out = 0;
+    
+    always@(posedge clk)
+        count_out = count_out + 1;
+endmodule
+```
+
+```verilog
+//测定输入时钟高低电平持续时间
+module clk_time_mea(clk);
+    input clk;
+    time posedge_time, negedge_time;
+    time high_last_time, low_last_time, last_time;
+    initial
+        begin
+            @(posedge clk);
+            posedge_time = $time;
+            @(negedge clk);
+            negedge_time = $time;
+            @(posedge clk);
+            last_time = $time - posedge_time;
+            high_last_time = negedge_time - posedge_time;
+            low_last_time = last_time - high_last_time;
+        end
+endmodule
+```
 
 ### 电平敏感事件控制
 
@@ -285,6 +391,18 @@ fork-join 过程块加上延迟赋值语句
 
 `wait(条件表达式) 行为语句;`
 
-`wait(条件表达式)`
+`wait(条件表达式);`
+
+条件表达式为真时，执行语句
 
 一般情况下会构成 latch， 但现在又不用这玩意……
+
+```verilog
+wait(enable == 1)
+begin
+    d = a & b;
+    d = d | c;
+end
+```
+
+第 2 种表达式没有包含行为语句，仿真进程执行到 wait 控制语句时，若条件表达式为假，进入等待状态，一直到条件表达式取值为真。
