@@ -81,7 +81,7 @@ Verilog 的出身来源于C语言
 
 #### 连线型
 
-\<net_declaration>\<drive_strength>\<range>\<delay>\[list_of_variables]
+`<net_declaration><drive_strength><range><delay>[list_of_variables]`
 
 - net_declaration
 - drive_strength：表示连线变量的驱动强度
@@ -91,14 +91,14 @@ Verilog 的出身来源于C语言
 
 #### reg型
 
-reg\<range>\[list_of_variables]
+`reg<range>[list_of_variables]`
 
 - range：
 - list_of_variables：
 
 #### 存储器型
 
-reg\<range1>\<name_of_register>\<range2>
+`reg<range1><name_of_register><range2>`
 
 - range1：表示存储器中寄存器的位宽，格式[msb:lsb]
 - range2：表示寄存器的个数，格式[msb:lsb]，即有msb-lsb+1个
@@ -110,19 +110,19 @@ reg\<range1>\<name_of_register>\<range2>
 
 整型数据常用于对循环控制变量的说明，在算术运算符中被视为二进制补码形式的有符号数。除了寄存器型数据被当做无符号数来处理之外，整型数据与32位寄存器型数据在实际意义上相同。
 
-integer \<list_of_variables>
+`integer <list_of_variables>`
 
 #### 时间型
 
 64位的无符号数。时间型数据主要用于对模拟时间的存储和计算处理，常与系统函数$time一起使用
 
-time \<list_of_register_variables>
+`time <list_of_register_variables>`
 
 #### 实型
 
 实型数据在机器码中是浮点型数值，可用于对延迟时间的计算
 
-real  \<list_of_variables>
+`real  <list_of_variables>`
 
 #### 参数型
 
