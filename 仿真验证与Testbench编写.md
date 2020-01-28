@@ -448,6 +448,35 @@ endtask
 
 使用任务可以使程序更加简洁易懂
 
+#### 例
+
+```verilog
+module demo_task_invo_tb;
+    reg [7:0] mem[127:0];
+    reg [15:0] a;
+    reg [31:0] b;
+    initial
+        begin
+            a = 0;
+            read_mem(a, b); //第一次调用
+            #10;
+            a = 64;
+            read_mem(a, b); //第二次调用
+        end
+    task read_mem(); //任务定义部分
+        input [15:0] address;
+        output [31:0] data;
+        reg [3:0] counter;
+        reg [7:0] temp[1:4];
+        begin
+            for(counter = 1; counter <= 4; counter = counter + 1)
+                temp[counter] = mem[address + counter - 1];
+            data = {temp[1], temp[2], temp[3], temp[4]};
+        end
+    endtask
+endmodule
+```
+
 ### 函数
 
 对于一个子程序，如果下面的所有条件成立，则可以使用函数来完成：
@@ -487,9 +516,48 @@ endfunction
 
 `函数名(<输入表达式1>, <输入表达式2>, ... )`
 
+#### 例
+
+```verilog
+module tryfact_tb;
+    function [31:0] factorial;
+        input [3:0] operand;
+        reg [3:0] index;
+        begin
+            factorial = 1;
+            for(index = 1; index <= oprand; index = index + 1)
+                factorial = index * factorial;
+        end
+    endfunction
+    
+    reg [31:0] result;
+    reg [3:0] n;
+    initial
+        begin
+            result = 1;
+            for(n = 1; n <= 9; n = n + 1)
+                begin
+                    result = factorial(n);
+                    $display(...)
+                end
+        end
+endmodule
+```
+
 ### 任务与函数的区别
 
-| 函数 | 任务 |
-| :--: | :--: |
-|      |      |
+|                             函数                             |                           任务                           |
+| :----------------------------------------------------------: | :------------------------------------------------------: |
+|          函数能调用另一个函数，但不能调用另一个任务          |         任务能调用另一个任务，也能调用另一个函数         |
+|                函数总是在仿真时刻0就开始执行                 |               任务可以在非 0 仿真时刻执行                |
+|        函数一定不能包含任何延迟、时序或者事件控制语句        |        任务可以包含延迟、时序或者事件控制声明语句        |
+|                  任务函数至少有一个输入变量                  |        任务可以没有或者有多个输入、输出和双向变量        |
+|         函数只能返回一个值，函数不能有输出或双向变量         | 任务不返回任何值，任务可以通过输出或者双向变量传递多个值 |
+| 函数不能单独作为一条语句出现，它只能以语句的一部分的形式出现 |       任务的调用是通过一条单独的任务调用语句实现的       |
+|           函数调用可以出现在过程块或连续赋值语句中           |                任务调用只能出现在过程块中                |
+|           函数的执行不允许由 disable 语句进行中断            |          任务的执行可以由 disable 语句进行中断           |
+
+## 典型测试向量的设计
+
+
 
